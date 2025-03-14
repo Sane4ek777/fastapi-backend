@@ -12,7 +12,7 @@ XML_FILE = "products.xml"
 # Разрешаем CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Разрешаем запросы с фронта
+    allow_origins=["https://instrumentdar.ru"],  # Разрешаем запросы с фронта
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
