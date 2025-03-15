@@ -109,7 +109,7 @@ def get_product(product_id: int):
 def download_db():
     return FileResponse(DB_FILE, filename="store.db", media_type="application/octet-stream")
 
-@app.get("/api/categories")
+@app.get("/categories")
 def get_categories():
     tree = ET.parse(XML_FILE)
     root = tree.getroot()
