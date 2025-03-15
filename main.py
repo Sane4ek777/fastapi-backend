@@ -74,17 +74,35 @@ def startup_event():
 def get_products(category_id: int = Query(None), min_price: float = Query(0.0), max_price: float = Query(999999.0)):
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
-    query = "SELECT id, name, price, price_rrc, description, image, category_id, available FROM products WHERE (COALESCE(price_rrc, price * 1.3)) BETWEEN ? AND ?"
+    query = "SELECT id, name, price, price_rrc, description, image, category_id, available FROM products WHERE price BETWEEN ? AND ?"
     params = [min_price, max_price]
-    
+
     if category_id is not None:
         query += " AND category_id = ?"
         params.append(category_id)
-    
+
     cursor.execute(query, params)
     products = cursor.fetchall()
     conn.close()
-    return [{"id": p[0], "name": p[1], "price": p[3] if p[3] is not None else p[2] * 1.3, "description": p[4], "image": p[5], "category_id": p[6], "available": bool(p[7])} for p in products]
+
+    def calculate_price(price, price_rrc):
+        price_rrc = price_rrc if price_rrc is not None else price * 1.3
+        if price < 2000:
+            return price * 1.6
+        return max(price_rrc, price * 1.3)
+
+    return [
+        {
+            "id": p[0],
+            "name": p[1],
+            "price": calculate_price(p[2], p[3]),
+            "description": p[4],
+            "image": p[5],
+            "category_id": p[6],
+            "available": bool(p[7]),
+        }
+        for p in products
+    ]
 
 @app.get("/product/{product_id}")
 def get_product(product_id: int):
@@ -93,17 +111,26 @@ def get_product(product_id: int):
     cursor.execute("SELECT id, name, price, price_rrc, description, image, category_id, available FROM products WHERE id = ?", (product_id,))
     product = cursor.fetchone()
     conn.close()
+    
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    def calculate_price(price, price_rrc):
+        price_rrc = price_rrc if price_rrc is not None else price * 1.3
+        if price < 2000:
+            return price * 1.6
+        return max(price_rrc, price * 1.3)
+
     return {
         "id": product[0], 
         "name": product[1], 
-        "price": product[3] if product[3] is not None else product[2] * 1.3, 
+        "price": calculate_price(product[2], product[3]), 
         "description": product[4], 
         "image": product[5], 
         "category_id": product[6], 
         "available": bool(product[7])
     }
+
 
 @app.get("/download-db")
 def download_db():
