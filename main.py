@@ -90,6 +90,7 @@ def get_products(category_id: int = Query(None), min_price: float = Query(0.0), 
         if price < 2000:
             return price * 1.6
         return max(price_rrc, price * 1.3)
+        return round(final_price)
 
     return [
         {
