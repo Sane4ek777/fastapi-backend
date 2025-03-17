@@ -18,6 +18,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Функция для расчета цены
+def calculate_price(price, price_rrc):
+    price_rrc = price_rrc if price_rrc is not None else price * 1.3
+    if price < 2000:
+        final_price = price * 1.6
+    else:
+        final_price = max(price_rrc, price * 1.3)
+    return round(final_price)  # Округляем до целого числа
+
 class Product(BaseModel):
     id: int
     name: str
@@ -85,13 +94,6 @@ def get_products(category_id: int = Query(None), min_price: float = Query(0.0), 
     products = cursor.fetchall()
     conn.close()
 
-    def calculate_price(price, price_rrc):
-        price_rrc = price_rrc if price_rrc is not None else price * 1.3
-        if price < 2000:
-            return price * 1.6
-        return max(price_rrc, price * 1.3)
-        return round(final_price)
-
     return [
         {
             "id": p[0],
@@ -115,12 +117,6 @@ def get_product(product_id: int):
     
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-
-    def calculate_price(price, price_rrc):
-        price_rrc = price_rrc if price_rrc is not None else price * 1.3
-        if price < 2000:
-            return price * 1.6
-        return max(price_rrc, price * 1.3)
 
     return {
         "id": product[0], 
