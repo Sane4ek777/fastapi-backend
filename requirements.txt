@@ -1,7 +1,0 @@
-fastapi
-uvicorn
-beautifulsoup4
-requests
-openpyxl
-lxml
-transliterate
