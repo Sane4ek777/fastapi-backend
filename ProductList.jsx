@@ -8,7 +8,6 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
   const [error, setError] = useState(null);
-  const [totalItems, setTotalItems] = useState(null);  // Хранение общего числа товаров
   const navigate = useNavigate();
 
   // Вычисляем, сколько товаров влезает на экран
@@ -57,13 +56,10 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       const res = await fetch(url);
       const data = await res.json();
 
-      const products = data.products || [];  // Исправлено: теперь извлекаем из data.products
-
       if (isInitial) {
-        setTotalItems(data.total_items);  // Сохраняем общее количество товаров
-        setAllProducts(products);
+        setAllProducts(data.products);
       } else {
-        setAllProducts((prev) => [...prev, ...products]);
+        setAllProducts((prev) => [...prev, ...data.products]);
       }
     } catch (err) {
       console.error("Ошибка загрузки товаров:", err);
@@ -75,16 +71,14 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-        if (allProducts.length < totalItems) {
-          const nextOffset = allProducts.length;
-          fetchProducts(nextOffset, visibleCount);
-        }
+        const nextOffset = allProducts.length;
+        fetchProducts(nextOffset, visibleCount);
       }
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [allProducts, visibleCount, selectedCategory, searchQuery, sortOrder, totalItems]);
+  }, [allProducts, visibleCount, selectedCategory, searchQuery, sortOrder]);
 
   const handleSortChange = (e) => {
     setSortOrder(e.target.value);
@@ -112,14 +106,14 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       </div>
 
       <div className={styles.productContainer}>
-        {allProducts.map((product) => (
+        {Array.isArray(allProducts) && allProducts.map((product) => (
           <div
             key={product.slug}
             className={styles.productCard}
             onClick={() => handleCardClick(product.slug)}
           >
             <Product
-              images={product.images}
+              images={Array.isArray(product.images) ? product.images : product.images ? product.images.split(",") : []}
               name={product.name}
               price={product.price}
               description={product.description}
