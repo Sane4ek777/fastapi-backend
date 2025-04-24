@@ -113,7 +113,7 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
             onClick={() => handleCardClick(product.slug)}
           >
             <Product
-              images={Array.isArray(product.images) ? product.images : product.images ? product.images.split(",") : []}
+              images={Array.isArray(product.images) ? product.images : (product.images ? product.images.split(",") : [])}
               name={product.name}
               price={product.price}
               description={product.description}
