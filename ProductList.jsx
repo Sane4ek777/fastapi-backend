@@ -7,10 +7,11 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
   const [allProducts, setAllProducts] = useState([]);
   const [visibleCount, setVisibleCount] = useState(0);
   const [sortOrder, setSortOrder] = useState("asc");
-  const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState(null);
+  const [totalItems, setTotalItems] = useState(null);  // Хранение общего числа товаров
   const navigate = useNavigate();
 
+  // Вычисляем, сколько товаров влезает на экран
   const calculateVisibleCount = () => {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
@@ -24,6 +25,7 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
     return itemsPerRow * rowsPerPage;
   };
 
+  // Загружаем первую порцию товаров
   useEffect(() => {
     const loadInitialProducts = async () => {
       const count = calculateVisibleCount();
@@ -34,6 +36,7 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
     loadInitialProducts();
   }, [selectedCategory, searchQuery, sortOrder]);
 
+  // Подгрузка товаров с бэкенда
   const fetchProducts = async (offset, limit, isInitial = false) => {
     try {
       const params = new URLSearchParams();
@@ -54,27 +57,28 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       const res = await fetch(url);
       const data = await res.json();
 
-      if (isInitial) {
-        setAllProducts(data.products);
-      } else {
-        setAllProducts((prev) => [...prev, ...data.products]);
-      }
+      const products = data.products || [];  // Исправлено: теперь извлекаем из data.products
 
-      setTotalItems(data.total_items);
+      if (isInitial) {
+        setTotalItems(data.total_items);  // Сохраняем общее количество товаров
+        setAllProducts(products);
+      } else {
+        setAllProducts((prev) => [...prev, ...products]);
+      }
     } catch (err) {
       console.error("Ошибка загрузки товаров:", err);
       setError("Не удалось загрузить товары. Попробуйте позже.");
     }
   };
 
+  // Скролл: загружаем новые товары
   useEffect(() => {
     const handleScroll = () => {
-      if (
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 &&
-        allProducts.length < totalItems
-      ) {
-        const nextOffset = allProducts.length;
-        fetchProducts(nextOffset, visibleCount);
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+        if (allProducts.length < totalItems) {
+          const nextOffset = allProducts.length;
+          fetchProducts(nextOffset, visibleCount);
+        }
       }
     };
 
