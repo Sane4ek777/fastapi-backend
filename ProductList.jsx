@@ -56,9 +56,12 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       const res = await fetch(url);
       const data = await res.json();
 
+      // Логируем ответ
+      console.log('Response from backend:', data);
+
       // Убедимся, что данные приходят как массив
       const products = Array.isArray(data.products) ? data.products : [];
-
+      
       if (isInitial) {
         setAllProducts(products);
       } else {
@@ -109,22 +112,27 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       </div>
 
       <div className={styles.productContainer}>
-        {Array.isArray(allProducts) && allProducts.map((product) => (
-          <div
-            key={product.slug}
-            className={styles.productCard}
-            onClick={() => handleCardClick(product.slug)}
-          >
-            <Product
-              images={Array.isArray(product.images) ? product.images : (product.images ? product.images.split(",") : [])}
-              name={product.name}
-              price={product.price}
-              description={product.description}
-              available={product.available}
-              onAddToCart={(e) => handleAddToCart(e, product.name)}
-            />
-          </div>
-        ))}
+        {/* Проверка, что allProducts - это массив перед использованием map */}
+        {Array.isArray(allProducts) && allProducts.length > 0 ? (
+          allProducts.map((product) => (
+            <div
+              key={product.slug}
+              className={styles.productCard}
+              onClick={() => handleCardClick(product.slug)}
+            >
+              <Product
+                images={Array.isArray(product.images) ? product.images : (product.images ? product.images.split(",") : [])}
+                name={product.name}
+                price={product.price}
+                description={product.description}
+                available={product.available}
+                onAddToCart={(e) => handleAddToCart(e, product.name)}
+              />
+            </div>
+          ))
+        ) : (
+          <p>Товары не найдены</p>
+        )}
       </div>
     </div>
   );
