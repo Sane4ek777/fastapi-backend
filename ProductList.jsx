@@ -56,10 +56,13 @@ const ProductList = ({ selectedCategory, searchQuery }) => {
       const res = await fetch(url);
       const data = await res.json();
 
+      // Убедимся, что данные приходят как массив
+      const products = Array.isArray(data.products) ? data.products : [];
+
       if (isInitial) {
-        setAllProducts(data.products);
+        setAllProducts(products);
       } else {
-        setAllProducts((prev) => [...prev, ...data.products]);
+        setAllProducts((prev) => [...prev, ...products]);
       }
     } catch (err) {
       console.error("Ошибка загрузки товаров:", err);
