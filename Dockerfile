@@ -20,7 +20,6 @@ RUN npm run build
 # Использование Nginx для сервировки статики
 FROM nginx:alpine
 
-COPY ./default.conf /etc/nginx/conf.d/default.conf
 # Копирование собранного фронтенда в папку Nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
